@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import Header from './Header';
 import Player from './Player';
-  
+import AddPlayerForm from './AddPlayerForm';
+
 class App extends Component {
   state = {
     players: [
@@ -22,20 +23,48 @@ class App extends Component {
       },
       {
         name: "James",
-        score: 0, 
+        score: 0,
         id: 4
       }
     ]
   };
 
+  // player id counter
+  prevPlayerId = 4;
+
   handleScoreChange = (index, delta) => {
-     this.setState( prevState => ({
-       score: prevState.players[index].score += delta
-     }));
-    // console.log("index: ", index, "delta: ", delta);
+    this.setState( prevState => {
+      // New 'players' array – a copy of the previous `players` state
+      const updatedPlayers = [ ...prevState.players ];
+      // A copy of the player object we're targeting
+      const updatedPlayer = { ...updatedPlayers[index] };
+
+      // Update the target player's score
+      updatedPlayer.score += delta;
+      // Update the 'players' array with the target player's latest score
+      updatedPlayers[index] = updatedPlayer;
+
+      // Update the `players` state without mutating the original state
+      return {
+        players: updatedPlayers
+      };
+    });
   }
 
- 
+  handleAddPlayer = (name) => {
+    this.setState( prevState => {
+      return {
+        players: [
+          ...prevState.players,
+          {
+            name,
+            score: 0,
+            id: this.prevPlayerId += 1
+          }
+        ]
+      };
+    });
+  }
 
   handleRemovePlayer = (id) => {
     this.setState( prevState => {
@@ -50,7 +79,7 @@ class App extends Component {
       <div className="scoreboard">
         <Header 
           title="Scoreboard" 
-          players={this.state.players}
+          players={this.state.players} 
         />
   
         {/* Players list */}
@@ -60,12 +89,13 @@ class App extends Component {
             score={player.score}
             id={player.id}
             key={player.id.toString()} 
-            // map callback fn takes an optional index param that contains the index of the current item being processed in an array
             index={index}
-            changeScore={this.handleScoreChange}      
-            removePlayer={this.handleRemovePlayer}
+            changeScore={this.handleScoreChange}
+            removePlayer={this.handleRemovePlayer}           
           />
         )}
+
+        <AddPlayerForm addPlayer={this.handleAddPlayer} />
       </div>
     );
   }
